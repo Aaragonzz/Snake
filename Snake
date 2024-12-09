@@ -1,0 +1,126 @@
+import turtle
+import random
+
+class SnakeGame:
+    def __init__(self):
+        self.window = turtle.Screen()
+        self.window.title("Snake Game")
+        self.window.setup(width=600, height=600)
+        self.window.bgcolor("black")
+        
+        self.snake = []
+        self.food = None
+        
+        self.score = 0
+        self.high_score = 0
+        
+        self.create_snake()
+        self.spawn_food()
+        
+        self.window.listen()
+        self.window.onkey(self.up, "Up")
+        self.window.onkey(self.down, "Down")
+        self.window.onkey(self.left, "Left")
+        self.window.onkey(self.right, "Right")
+        
+        self.game_over()
+        
+    def create_snake(self):
+        start_position = (0, 0)
+        segment = turtle.Turtle()
+        segment.speed(0)
+        segment.shape("square")
+        segment.color("green")
+        segment.penup()
+        segment.goto(start_position)
+        self.snake.append(segment)
+        
+        for _ in range(19):
+            segment = turtle.Turtle()
+            segment.speed(0)
+            segment.shape("square")
+            segment.color("green")
+            segment.penup()
+            segment.goto(start_position)
+            self.snake.append(segment)
+            start_position = (start_position[0] - 20, start_position[1])
+        
+    def spawn_food(self):
+        x = random.randint(-290, 290)
+        y = random.randint(-290, 290)
+        self.food = turtle.Turtle()
+        self.food.speed(0)
+        self.food.shape("circle")
+        self.food.color("red")
+        self.food.penup()
+        self.food.goto(x, y)
+        
+    def move_snake(self):
+        for seg_num in range(len(self.snake) - 1, 0, -1):
+            new_x = self.snake[seg_num - 1].xcor()
+            new_y = self.snake[seg_num - 1].ycor()
+            self.snake[seg_num].goto(new_x, new_y)
+        self.snake[0].forward(20)
+        
+    def up(self):
+        if self.snake[0].heading() != 270:
+            self.snake[0].setheading(90)
+            
+    def down(self):
+        if self.snake[0].heading() != 90:
+            self.snake[0].setheading(270)
+            
+    def left(self):
+        if self.snake[0].heading() != 180:
+            self.snake[0].setheading(180)
+            
+    def right(self):
+        if self.snake[0].heading() != 0:
+            self.snake[0].setheading(0)
+            
+    def check_collision(self):
+        head_pos = self.snake[0].pos()
+        if head_pos == self.food.pos():
+            self.score += 1
+            self.spawn_food()
+            self.extend_snake()
+        elif head_pos in [segment.pos() for segment in self.snake[1:]]:
+            return False
+        elif head_pos[0] >= 300 or head_pos[0] <= -300 or head_pos[1] >= 300 or head_pos[1] <= -300:
+            return False
+        return True
+        
+    def extend_snake(self):
+        tail = self.snake.pop()
+        x, y = tail.position()
+        self.snake.insert(0, turtle.Turtle())
+        self.snake[0].speed(0)
+        self.snake[0].shape("square")
+        self.snake[0].color("green")
+        self.snake[0].penup()
+        self.snake[0].goto(x, y)
+        
+    def game_over(self):
+        self.window.textinput("Game Over", f"Your score: {self.score}\nHigh Score: {self.high_score}")
+        play_again = self.window.textinput("Play Again?", "Do you want to play again? (yes/no)")
+        if play_again.lower() == "yes":
+            self.reset_game()
+        else:
+            self.window.bye()
+            
+    def reset_game(self):
+        self.snake.clear()
+        self.create_snake()
+        self.spawn_food()
+        self.score = 0
+        
+    def run(self):
+        while True:
+            self.move_snake()
+            self.check_collision()
+            self.window.update()
+            turtle.delay(100)
+            
+if __name__ == "__main__":
+    game = SnakeGame()
+    game.run()
